@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1
 
+# Declared in global scope so it's available to every FROM below
+ARG BUILD_FROM
+
 # Builder stage: compile vico-cli for Linux
 FROM golang:1.23-alpine AS builder
 
@@ -16,9 +19,10 @@ COPY vico-cli-main/ ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/vico-cli main.go
 
 # -------------------------------------------------------------------
-# Runtime image: Home Assistant base image for aarch64 (ARM64)
+# Runtime image: Home Assistant base image, set per-architecture by
+# build.yaml via the BUILD_FROM arg
 # -------------------------------------------------------------------
-FROM ghcr.io/home-assistant/aarch64-base:3.19
+FROM ${BUILD_FROM}
 
 # Install MQTT client and jq for JSON handling
 RUN apk add --no-cache mosquitto-clients jq
